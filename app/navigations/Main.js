@@ -3,16 +3,16 @@ import { StyleSheet, Text, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import Home from "../screens/Home/Home";
+import Profile from "../screens/Profile/Profile";
+import AddPost from "../screens/AddPost/AddPost";
 import Login from "../screens/Login/Login";
 import Register from "../screens/Register/Register";
 import SplashScreen from "../screens/SplashScreen/SplashScreen";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
-// blue #189AD5
-// Green #92D0BC
-// light blue #98C3E7
-// light green #C7E6DA
 const main = () => {
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState("");
   const Stack = createStackNavigator();
 
   setTimeout(() => {
@@ -23,12 +23,40 @@ const main = () => {
     return <SplashScreen />;
   }
 
+  const Tab = createBottomTabNavigator();
+
+  const TabsNavigator = () => {
+    return (
+      <Tab.Navigator
+        tabBarOptions={{
+          activeTintColor: "tomato",
+          inactiveTintColor: "gray",
+        }}
+      >
+        <Tab.Screen name="Home" component={Home} />
+        <Tab.Screen name="AddPost" component={AddPost} />
+        <Tab.Screen name="Profile" component={Profile} />
+      </Tab.Navigator>
+    );
+  };
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="Register" component={Register} />
-        <Stack.Screen name="Home" component={Home} />
+        {token == "" ? (
+          <>
+            <Stack.Screen name="Login">
+              {(props) => <Login {...props} setToken={setToken} />}
+            </Stack.Screen>
+            <Stack.Screen name="Register" component={Register} />
+          </>
+        ) : (
+          <>
+            <Stack.Screen options={{ title: "Home" }} name="TabsNavigator">
+              {(props) => <TabsNavigator {...props} />}
+            </Stack.Screen>
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );

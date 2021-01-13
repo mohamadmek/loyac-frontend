@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Image,
   StyleSheet,
@@ -13,6 +13,7 @@ import { colors } from "@config";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { loginApi } from "../../services/auth";
+import Loading from "../../components/common/Loading";
 
 const SignupSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Required"),
@@ -22,78 +23,86 @@ const SignupSchema = Yup.object().shape({
     .required("Required"),
 });
 
-const Login = ({ navigation }) => {
-  const submitLogin = async (body) => {
+const Login = ({ navigation, setToken }) => {
+  const [loading, setLoading] = useState(false);
+  const submitLogin = async (body, resetForm) => {
     try {
-      const data = await loginApi(body);
-      console.log(data);
+      const result = await loginApi(body);
+      if (result.data.result) {
+        setToken(result.data.token);
+      } else {
+        alert(result.data.message);
+      }
     } catch (err) {
       console.log("ERROR ", err);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Image resizeMode="contain" style={styles.logo} source={Logo} />
-      <Text style={styles.title}>Let's Connect together</Text>
-      {/* Login form using Formik and Yup for validations */}
-      <View style={{ paddingHorizontal: 20 }}>
-        <Formik
-          initialValues={{ email: "test@test.com", password: "test" }}
-          onSubmit={(values) => submitLogin(values)}
-          validationSchema={SignupSchema}
-        >
-          {({
-            handleChange,
-            handleBlur,
-            handleSubmit,
-            errors,
-            touched,
-            values,
-          }) => (
-            <View>
-              <TextInput
-                onChangeText={handleChange("email")}
-                onBlur={handleBlur("email")}
-                value={values.email}
-                style={styles.input}
-                placeholder="Email"
-              />
-              {errors.email && touched.email ? (
-                <Text style={styles.textError}>{errors.email}</Text>
-              ) : null}
-              <TextInput
-                onChangeText={handleChange("password")}
-                onBlur={handleBlur("password")}
-                value={values.password}
-                style={styles.input}
-                placeholder="Password"
-              />
-              {errors.password && touched.password ? (
-                <Text style={styles.textError}>{errors.password}</Text>
-              ) : null}
-              <TouchableOpacity
-                onPress={handleSubmit}
-                style={styles.loginButton}
-              >
-                <View>
-                  <Text style={styles.loginButtonText}>Login</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          )}
-        </Formik>
-        <Text style={styles.bottomText}>
-          Don't have an account?{" "}
-          <Text
-            onPress={() => navigation.navigate("Register")}
-            style={{ fontWeight: "bold" }}
+    <>
+      {loading ? <Loading /> : null}
+      <View style={styles.container}>
+        <Image resizeMode="contain" style={styles.logo} source={Logo} />
+        <Text style={styles.title}>Let's Connect together</Text>
+        {/* Login form using Formik and Yup for validations */}
+        <View style={{ paddingHorizontal: 20 }}>
+          <Formik
+            initialValues={{ email: "test@test.com", password: "test" }}
+            onSubmit={(values, { resetForm }) => submitLogin(values, resetForm)}
+            validationSchema={SignupSchema}
           >
-            Register here!
+            {({
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              errors,
+              touched,
+              values,
+            }) => (
+              <View>
+                <TextInput
+                  onChangeText={handleChange("email")}
+                  onBlur={handleBlur("email")}
+                  value={values.email}
+                  style={styles.input}
+                  placeholder="Email"
+                />
+                {errors.email && touched.email ? (
+                  <Text style={styles.textError}>{errors.email}</Text>
+                ) : null}
+                <TextInput
+                  onChangeText={handleChange("password")}
+                  onBlur={handleBlur("password")}
+                  value={values.password}
+                  style={styles.input}
+                  placeholder="Password"
+                />
+                {errors.password && touched.password ? (
+                  <Text style={styles.textError}>{errors.password}</Text>
+                ) : null}
+                <TouchableOpacity
+                  onPress={handleSubmit}
+                  style={styles.loginButton}
+                >
+                  <View>
+                    <Text style={styles.loginButtonText}>Login</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            )}
+          </Formik>
+          <Text style={styles.bottomText}>
+            Don't have an account?{" "}
+            <Text
+              onPress={() => navigation.navigate("Register")}
+              style={{ fontWeight: "bold" }}
+            >
+              Register here!
+            </Text>
           </Text>
-        </Text>
+        </View>
       </View>
-    </View>
+    </>
   );
 };
 
